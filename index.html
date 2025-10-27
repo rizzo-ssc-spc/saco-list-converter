@@ -1,9 +1,11 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 
 <head>
     <meta charset="UTF-8">
-    <title>SACO List Converter</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="SACO list converter - Convert Excel files to HTML format">
+    <title>SACO list converter</title>
     <script src="https://cdn.sheetjs.com/xlsx-0.20.0/package/dist/xlsx.full.min.js"></script>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
@@ -25,10 +27,11 @@
 
         h1 {
             margin-top: 0;
+            margin-bottom: 30px;
         }
 
         input[type="file"] {
-            margin-bottom: 20px;
+            margin-bottom: 15px;
         }
 
         label {
@@ -49,7 +52,7 @@
         }
 
         .language-selector {
-            margin-bottom: 15px;
+            margin-bottom: 25px;
         }
 
         .language-selector .btn {
@@ -59,63 +62,147 @@
         .btn.active {
             font-weight: bold;
         }
+        
+        /* Accessibility improvements */
+        :focus {
+            outline: 3px solid #4A90E2;
+            outline-offset: 2px;
+        }
+        
+        .visually-hidden {
+            position: absolute;
+            width: 1px;
+            height: 1px;
+            padding: 0;
+            margin: -1px;
+            overflow: hidden;
+            clip: rect(0, 0, 0, 0);
+            border: 0;
+        }
+        
+        /* Ensure sufficient color contrast */
+        .btn-light {
+            color: #2C2C2C;
+            background-color: #F8F9FA;
+        }
+        
+        .btn-light:hover {
+            background-color: #E2E6EA;
+        }
+        
+        /* Status message styling */
+        .status-message {
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 4px;
+        }
+        
+        .status-message.success {
+            background-color: #DFF0D8;
+            color: #3C763D;
+            border: 1px solid #D6E9C6;
+        }
     </style>
 </head>
 
 <body>
 
-    <div class="container">
-        <h1>SACO List Converter</h1>
-        <div class="language-selector mrgn-bttm-md mrgn-tp-lg">
-            <button id="btnEnglish" class="btn btn-primary active">English</button>
-            <button id="btnFrench" class="btn btn-default">French</button>
-            <button id="btn-copy-code" class="btn btn-default">Copy code</button>
+    <main class="container" role="main">
+        <h1>SACO list converter</h1>
+        
+        <div class="language-selector mrgn-bttm-md mrgn-tp-lg" role="group" aria-label="Select output language">
+            <button id="btnEnglish" class="btn btn-primary active" aria-pressed="true">
+                <span class="visually-hidden">Generate HTML in </span>English
+            </button>
+            <button id="btnFrench" class="btn btn-light" aria-pressed="false">
+                <span class="visually-hidden">Generate HTML in </span>French
+            </button>
+            <button id="btn-copy-code" class="btn btn-light" aria-label="Copy generated HTML code">
+                <i class="bi bi-clipboard" aria-hidden="true"></i> Copy code
+            </button>
         </div>
-        <input type="file" id="upload" accept=".xlsx,.xls" />
-        <label for="output">Generated HTML Code:</label>
-        <textarea id="output" readonly></textarea>
-    </div>
+
+        <div class="file-input-section">
+            <label for="upload" class="form-label">Select Excel file to convert:</label>
+            <input type="file" id="upload" accept=".xlsx,.xls" class="form-control" aria-describedby="fileHelpText" />
+            <div id="fileHelpText" class="form-text">Accepted formats: .xlsx, .xls</div>
+        </div>
+
+        <div id="statusMessages" role="status" aria-live="polite" class="status-message"></div>
+
+        <div class="output-section mt-4">
+            <label for="output" class="form-label">Generated HTML Code:</label>
+            <textarea id="output" readonly class="form-control" aria-describedby="outputHelpText"></textarea>
+            <div id="outputHelpText" class="form-text">The generated HTML code will appear here after uploading a file.</div>
+        </div>
+    </main>
 
     <script>
         let currentLanguage = 'en';
 
+        function updateLanguageButtons(selectedLang) {
+            const engBtn = document.getElementById('btnEnglish');
+            const frBtn = document.getElementById('btnFrench');
+            
+            if (selectedLang === 'en') {
+                engBtn.classList.add('active', 'btn-primary');
+                engBtn.classList.remove('btn-light');
+                engBtn.setAttribute('aria-pressed', 'true');
+                frBtn.classList.remove('active', 'btn-primary');
+                frBtn.classList.add('btn-light');
+                frBtn.setAttribute('aria-pressed', 'false');
+                document.documentElement.lang = 'en';
+            } else {
+                frBtn.classList.add('active', 'btn-primary');
+                frBtn.classList.remove('btn-light');
+                frBtn.setAttribute('aria-pressed', 'true');
+                engBtn.classList.remove('active', 'btn-primary');
+                engBtn.classList.add('btn-light');
+                engBtn.setAttribute('aria-pressed', 'false');
+                document.documentElement.lang = 'fr';
+            }
+        }
+
         document.getElementById('btnEnglish').addEventListener('click', function () {
             currentLanguage = 'en';
-            this.classList.add('active');
-            this.classList.remove('btn-default');
-            this.classList.add('btn-primary');
-            document.getElementById('btnFrench').classList.remove('active');
-            document.getElementById('btnFrench').classList.remove('btn-primary');
-            document.getElementById('btnFrench').classList.add('btn-default');
+            updateLanguageButtons('en');
             processFile();
         });
 
         document.getElementById('btnFrench').addEventListener('click', function () {
             currentLanguage = 'fr';
-            this.classList.add('active');
-            this.classList.remove('btn-default');
-            this.classList.add('btn-primary');
-            document.getElementById('btnEnglish').classList.remove('active');
-            document.getElementById('btnEnglish').classList.remove('btn-primary');
-            document.getElementById('btnEnglish').classList.add('btn-default');
+            updateLanguageButtons('fr');
             processFile();
         });
 
         // Copies the code in the text area
         document.getElementById("btn-copy-code").addEventListener("click", function() {
             const textarea = document.getElementById("output");
+            const statusMsg = document.getElementById("statusMessages");
             textarea.select();
+            
             try {
                 navigator.clipboard.writeText(textarea.value).then(() => {
-                    // Visual feedback that copy was successful
-                    const originalText = this.textContent;
-                    this.textContent = "Copied!";
+                    // Update button state and icon
+                    const originalIcon = '<i class="bi bi-clipboard" aria-hidden="true"></i>';
+                    const successIcon = '<i class="bi bi-clipboard-check" aria-hidden="true"></i>';
+                    const originalText = "Copy code";
+                    this.innerHTML = `${successIcon} Copied!`;
+                    
+                    // Show success message in status area
+                    statusMsg.className = "status-message success";
+                    statusMsg.textContent = "HTML code copied to clipboard successfully";
+                    
                     setTimeout(() => {
-                        this.textContent = originalText;
+                        this.innerHTML = `${originalIcon} ${originalText}`;
+                        statusMsg.textContent = "";
+                        statusMsg.className = "status-message";
                     }, 2000);
                 });
             } catch (err) {
                 console.error('Failed to copy text: ', err);
+                statusMsg.className = "status-message error";
+                statusMsg.textContent = "Failed to copy HTML code to clipboard";
             }
         });
 
@@ -207,20 +294,29 @@
                             expandAll: "Expand all",
                             collapseAll: "Collapse all",
                             notes: "Notes",
-                            email: "Email"
+                            email: "Email",
+                            dataTitleOpen: "Expand all sections of content",
+                            dataTitleClose: "Collapse all sections of content",
+                            titleOpen: "Expand all sections of content",
+                            titleClose: "Collapse all sections of content"
+
                         },
                         fr: {
-                            expandAll: "Développer tout",
+                            expandAll: "Afficher tout",
                             collapseAll: "Réduire tout",
                             notes: "Notes",
-                            email: "Courriel"
+                            email: "Courriel",
+                            dataTitleOpen: "Afficher toutes les sections de contenu",                            
+                            dataTitleClose: "Réduire toutes les sections de contenu",
+                            titleOpen: "Afficher toutes les sections de contenu",
+                            titleClose: "Réduire toutes les sections de contenu"
                         }
                     };
 
                     let html = `
 <div class="btn-group pull-right mrgn-bttm-md mrgn-lft-sm">
-    <button class="btn btn-default wb-toggle mrgn-rght-sm" data-toggle="{&quot;selector&quot;: &quot;details&quot;, &quot;parent&quot;: &quot;#saco-list&quot;, &quot;type&quot;: &quot;on&quot;}" type="button">${uiText[currentLanguage].expandAll}</button>
-    <button class="btn btn-default wb-toggle" data-toggle="{&quot;selector&quot;: &quot;details&quot;, &quot;parent&quot;: &quot;#saco-list&quot;, &quot;type&quot;: &quot;off&quot;}" type="button">${uiText[currentLanguage].collapseAll}</button>
+    <button type="button" class="btn btn-default wb-toggle mrgn-rght-sm" data-toggle="{&quot;selector&quot;: &quot;details&quot;, &quot;parent&quot;: &quot;#saco-list&quot;, &quot;type&quot;: &quot;on&quot;}" data-title-close="${uiText[currentLanguage].dataTitleClose}" data-title-open="${uiText[currentLanguage].dataTitleOpen}" title="${uiText[currentLanguage].titleOpen}">${uiText[currentLanguage].expandAll}</button>
+    <button type="button" class="btn btn-default wb-toggle" data-toggle="{&quot;selector&quot;: &quot;details&quot;, &quot;parent&quot;: &quot;#saco-list&quot;, &quot;type&quot;: &quot;off&quot;}" data-title-close="${uiText[currentLanguage].dataTitleClose}" data-title-open="${uiText[currentLanguage].dataTitleOpen}" title="${uiText[currentLanguage].titleClose}">${uiText[currentLanguage].collapseAll}</button>
 </div>\n`;
 
                     html += `<ul class="list-unstyled wb-filter lst-spcd" data-wb-filter="{&quot;selector&quot;:&quot;summary&quot;, &quot;hdnparentuntil&quot;: &quot;ul&quot;}" id="saco-list">\n`;
@@ -285,6 +381,7 @@
             reader.readAsArrayBuffer(file);
         }
     </script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
 
 </body>
 
