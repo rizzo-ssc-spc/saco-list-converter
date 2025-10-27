@@ -235,11 +235,9 @@
                     
                     for (let i = 1; i < jsonData.length; i++) {
                         const row = jsonData[i];
-                        const department = currentLanguage === 'en' ? (row[0] || "Unknown Department") : (row[1] || "Ministère inconnu");
-                        const acronym = currentLanguage === 'en' ? (row[2] || "") : (row[3] || "");
-                        let application = currentLanguage === 'en' ? (row[5] || "Unknown Application") : (row[6] || "Application inconnue");
-                        application = application.replace(/\\/g, "/").replace(/\s*\/\s*/g, " / ");
-                        
+                        if (!row) continue;
+
+                        // Extract user information
                         const firstName = row[8] || "";
                         const lastName = row[7] || "";
                         const phonePart1 = row[9] || "";
@@ -248,6 +246,30 @@
                         const cityRaw = row[4] || "";
                         const email = row[12] || "";
                         const notes = row[13] || "";
+
+                        // Skip if all user info fields are empty
+                        if (!firstName && !lastName && !phonePart1 && !phonePart2 && !cityRaw) {
+                            continue;
+                        }
+
+                        // Extract department and application info
+                        const deptEn = row[0];
+                        const deptFr = row[1];
+                        const acronymEn = row[2] || "";
+                        const acronymFr = row[3] || acronymEn; // Use English acronym if French is empty
+                        const appEn = row[5] || "";
+                        const appFr = row[6] || appEn; // Use English application if French is empty
+
+                        // Skip if required fields are empty
+                        if ((!deptEn && !deptFr) || (!appEn)) {  // Only check if English app is empty since French can fall back to English
+                            continue;
+                        }
+                        
+                        const department = currentLanguage === 'en' ? (deptEn || "Unknown Department") : (deptFr || "Ministère inconnu");
+                        const acronym = currentLanguage === 'en' ? acronymEn : acronymFr;
+                        let application = currentLanguage === 'en' ? appEn : appFr;
+                        application = application.replace(/\\/g, "/").replace(/\s*\/\s*/g, " / ");
+                        
                         const city = cityRaw.charAt(0).toUpperCase() + cityRaw.slice(1).toLowerCase();
                         
                         const phoneRaw = `${phonePart1}${phonePart2}`;
@@ -325,8 +347,15 @@
                         let deptAcronyms = {};
                         for (let i = 1; i < jsonData.length; i++) {
                             const row = jsonData[i];
+                            // Skip empty rows
+                            if (!row || row.every(cell => !cell)) {
+                                continue;
+                            }
                             const dept = currentLanguage === 'en' ? (row[0] || "") : (row[1] || "");
-                            const acronym = currentLanguage === 'en' ? (row[2] || "") : (row[3] || "");
+                            const acronymEn = row[2] || "";
+                            const acronymFr = row[3] || acronymEn; // Use English acronym if French is empty
+                            const acronym = currentLanguage === 'en' ? acronymEn : acronymFr;
+                            
                             if (dept && acronym) {
                                 deptAcronyms[dept] = acronym;
                             }
