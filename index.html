@@ -214,6 +214,46 @@
             processFile();
         });
         
+        // City name mappings for French and English
+        const cityMappings = new Map([
+            ['montreal', { en: 'Montreal', fr: 'Montréal' }],
+            ['quebec', { en: 'Quebec', fr: 'Québec' }],
+            ['levis', { en: 'Levis', fr: 'Lévis' }],
+            ['trois-rivieres', { en: 'Trois-Rivieres', fr: 'Trois-Rivières' }],
+            ['gatineau', { en: 'Gatineau', fr: 'Gatineau' }]
+        ]);
+
+        function formatCityName(city, language) {
+            if (!city) return '';
+            
+            // Normalize the city name for comparison (remove accents, convert to lowercase)
+            const normalizedCity = city.toLowerCase()
+                .normalize('NFD')
+                .replace(/[\u0300-\u036f]/g, '')  // Remove accents
+                .replace(/[^a-z0-9-]/g, '');      // Remove special characters except hyphen
+            
+            // Check if we have a mapping for this city
+            const mapping = cityMappings.get(normalizedCity);
+            if (mapping) {
+                return mapping[language];
+            }
+            
+            // If no mapping exists:
+            // For English: remove accents and capitalize
+            if (language === 'en') {
+                return city
+                    .normalize('NFD')
+                    .replace(/[\u0300-\u036f]/g, '')  // Remove accents
+                    .replace(/^\w/, c => c.toUpperCase())  // Capitalize first letter
+                    .replace(/\w+/g, w => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase());  // Capitalize each word
+            }
+            
+            // For French: keep accents and capitalize
+            return city
+                .replace(/^\w/, c => c.toUpperCase())  // Capitalize first letter
+                .replace(/\w+/g, w => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase());  // Capitalize each word
+        }
+
         function processFile() {
             const file = lastUploadedFile;
             if (!file) return;
@@ -270,7 +310,7 @@
                         let application = currentLanguage === 'en' ? appEn : appFr;
                         application = application.replace(/\\/g, "/").replace(/\s*\/\s*/g, " / ");
                         
-                        const city = cityRaw.charAt(0).toUpperCase() + cityRaw.slice(1).toLowerCase();
+                        const city = formatCityName(cityRaw, currentLanguage);
                         
                         const phoneRaw = `${phonePart1}${phonePart2}`;
                         let formattedPhone = phoneRaw;
