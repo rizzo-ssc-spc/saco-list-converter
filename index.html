@@ -401,7 +401,15 @@
                             }
                         }
                         
-                        for (const dept in grouped) {
+                        // Sort departments based on language
+                        const sortedDepartments = Object.keys(grouped).sort((a, b) => {
+                            return a.localeCompare(b, currentLanguage === 'fr' ? 'fr-CA' : 'en-CA', {
+                                sensitivity: 'base',
+                                ignorePunctuation: true
+                            });
+                        });
+
+                        for (const dept of sortedDepartments) {
                             const acronym = deptAcronyms[dept] || "";
                             
                             html += `    <li>\n`;
