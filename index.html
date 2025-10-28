@@ -121,7 +121,7 @@
         <div id="statusMessages" role="status" aria-live="polite" class="status-message"></div>
         
         <div class="output-section mt-4">
-            <label for="output" class="form-label"><span class="h3">Generated HTML Code</span></label>
+            <label for="output" class="form-label"><span class="h3">Generated HTML code</span></label>
             <div class="language-selector mb-4 mt-3" role="group" aria-label="Select output language">
                 <button id="btnEnglish" class="btn btn-primary active" aria-pressed="true">
                     <span class="visually-hidden">Generate HTML in </span>English
@@ -295,8 +295,8 @@
                         // Extract department and application info
                         const deptEn = row[0];
                         const deptFr = row[1];
-                        const acronymEn = row[2] || "";
-                        const acronymFr = row[3] || acronymEn; // Use English acronym if French is empty
+                        const acronymEn = (row[2] || "").trim();
+                        const acronymFr = (row[3] || acronymEn).trim(); // Use English acronym if French is empty
                         const appEn = row[5] || "";
                         const appFr = row[6] || appEn; // Use English application if French is empty
 
@@ -392,8 +392,8 @@
                                 continue;
                             }
                             const dept = currentLanguage === 'en' ? (row[0] || "") : (row[1] || "");
-                            const acronymEn = row[2] || "";
-                            const acronymFr = row[3] || acronymEn; // Use English acronym if French is empty
+                            const acronymEn = (row[2] || "").trim();
+                            const acronymFr = (row[3] || acronymEn).trim(); // Use English acronym if French is empty
                             const acronym = currentLanguage === 'en' ? acronymEn : acronymFr;
                             
                             if (dept && acronym) {
