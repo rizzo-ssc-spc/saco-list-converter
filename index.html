@@ -285,7 +285,8 @@
                         const extension = row[11] || "";
                         const cityRaw = row[4] || "";
                         const email = row[12] || "";
-                        const notes = row[13] || "";
+                        const notesEn = row[13] || "";
+                        const notesFr = row[14] || "";
 
                         // Skip if all user info fields are empty
                         if (!firstName && !lastName && !phonePart1 && !phonePart2 && !cityRaw) {
@@ -353,9 +354,30 @@
                         }
                         
                         grouped[department][application].contacts.push(contactItem);
-                        if (notes && !grouped[department][application].notes) {
-                            grouped[department][application].notes = notes.trim();
+                        
+                        // Handle notes based on current language
+                        if (!grouped[department][application].notes) {
+                            const trimmedNotesEn = notesEn.trim();
+                            const trimmedNotesFr = notesFr.trim();
+                            let notes = "";
+                            
+                            if (currentLanguage === 'en') {
+                                // English mode: use English notes only
+                                notes = trimmedNotesEn;
+                            } else {
+                                // French mode: use French notes or wrapped English notes
+                                if (trimmedNotesFr) {
+                                    notes = trimmedNotesFr;
+                                } else if (trimmedNotesEn) {
+                                    notes = `<span lang="en">${trimmedNotesEn}</span>`;
+                                }
+                            }
+                            
+                            if (notes) {
+                                grouped[department][application].notes = notes;
+                            }
                         }
+                        
                         if (email && !grouped[department][application].email) {
                             grouped[department][application].email = email.trim();
                         }
