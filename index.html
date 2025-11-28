@@ -272,6 +272,21 @@
                     });
                     
                     const grouped = {};
+
+                    // Helper: sanitize department names
+                    // - Remove space(s) before commas (e.g. "Immigration , Refugees" -> "Immigration, Refugees")
+                    // - Collapse multiple spaces to a single space and trim
+                    function normalizeDepartmentName(name) {
+                        if (!name) return "";
+                        try {
+                            return String(name)
+                                .replace(/\s+,/g, ',')
+                                .replace(/\s{2,}/g, ' ')
+                                .trim();
+                        } catch (e) {
+                            return String(name).trim();
+                        }
+                    }
                     
                     for (let i = 1; i < jsonData.length; i++) {
                         const row = jsonData[i];
@@ -306,7 +321,8 @@
                             continue;
                         }
                         
-                        const department = currentLanguage === 'en' ? (deptEn || "Unknown Department") : (deptFr || "Ministère inconnu");
+                        const departmentRaw = currentLanguage === 'en' ? (deptEn || "Unknown Department") : (deptFr || "Ministère inconnu");
+                        const department = normalizeDepartmentName(departmentRaw);
                         const acronym = currentLanguage === 'en' ? acronymEn : acronymFr;
                         let application = currentLanguage === 'en' ? appEn : appFr;
                         application = application.replace(/\\/g, "/").replace(/\s*\/\s*/g, " / ");
@@ -316,12 +332,25 @@
                         // Clean and verify phone number format
                         const phoneRaw = `${phonePart1}${phonePart2}`.replace(/\D/g, '');
                         let formattedPhone = '';
-                        
-                        // Only process the phone if it has at least 10 digits
-                        if (phoneRaw.length >= 10) {
+
+                        // Helper to validate phone numbers to avoid placeholder or obviously invalid numbers.
+                        // Rejects numbers that are all the same digit (e.g., 9999999999)
+                        // or that contain 7+ consecutive identical digits (e.g., 6131111111).
+                        function isValidPhoneNumber(digits) {
+                            if (!digits || digits.length < 10) return false;
+                            const core = digits.slice(0, 10);
+                            // All digits the same: 1111111111, 9999999999, etc.
+                            if (/^(\d)\1{9}$/.test(core)) return false;
+                            // 7 or more consecutive identical digits anywhere in the 10-digit core
+                            if (/(\d)\1{6,}/.test(core)) return false;
+                            return true;
+                        }
+
+                        // Only process the phone if it is a valid 10-digit number per our checks
+                        if (isValidPhoneNumber(phoneRaw)) {
                             // Format as XXX-XXX-XXXX
                             formattedPhone = `${phoneRaw.slice(0,3)}-${phoneRaw.slice(3,6)}-${phoneRaw.slice(6,10)}`;
-                            
+
                             // Add extension if present
                             if (extension.trim()) {
                                 formattedPhone += `#${extension.trim()}`;
@@ -422,7 +451,8 @@
                             if (!row || row.every(cell => !cell)) {
                                 continue;
                             }
-                            const dept = currentLanguage === 'en' ? (row[0] || "") : (row[1] || "");
+                            const deptRaw = currentLanguage === 'en' ? (row[0] || "") : (row[1] || "");
+                            const dept = normalizeDepartmentName(deptRaw);
                             const acronymEn = (row[2] || "").trim();
                             const acronymFr = (row[3] || acronymEn).trim(); // Use English acronym if French is empty
                             const acronym = currentLanguage === 'en' ? acronymEn : acronymFr;
