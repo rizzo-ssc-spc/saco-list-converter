@@ -287,14 +287,43 @@
                             return String(name).trim();
                         }
                     }
+
+                    // Helper: normalize person names
+                    // - If name is all lower-case or all UPPERCASE, convert to Title Case
+                    // - Preserve internal hyphens and apostrophes (e.g. "O'NEIL" -> "O'Neil", "ANNE-MARIE" -> "Anne-Marie")
+                    // - Collapse multiple spaces and trim
+                    function normalizePersonName(name) {
+                        if (!name) return "";
+                        let rawName = String(name).trim().replace(/\s{2,}/g, ' ');
+
+                        // Only transform if it's all lower-case or all upper-case
+                        const isLower = rawName === rawName.toLowerCase();
+                        const isUpper = rawName === rawName.toUpperCase();
+                        if (!isLower && !isUpper) return rawName;
+
+                        function capitalizeToken(tok) {
+                            if (!tok) return tok;
+                            return tok.charAt(0).toUpperCase() + tok.slice(1).toLowerCase();
+                        }
+
+                        return rawName.split(' ').map(word => {
+                            // Keep hyphens and apostrophes; capitalize each sub-token
+                            return word.split(/([-'’])/).map(part => {
+                                if (part === '-' || part === "'" || part === '’') return part;
+                                return capitalizeToken(part);
+                            }).join('');
+                        }).join(' ');
+                    }
                     
                     for (let i = 1; i < jsonData.length; i++) {
                         const row = jsonData[i];
                         if (!row) continue;
 
                         // Extract user information
-                        const firstName = row[8] || "";
-                        const lastName = row[7] || "";
+                        const firstNameRaw = row[8] || "";
+                        const lastNameRaw = row[7] || "";
+                        const firstName = normalizePersonName(firstNameRaw);
+                        const lastName = normalizePersonName(lastNameRaw);
                         const phonePart1 = row[9] || "";
                         const phonePart2 = row[10] || "";
                         const extension = row[11] || "";
