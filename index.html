@@ -288,6 +288,26 @@
                         }
                     }
 
+                    // Helper: normalize email domain to lowercase
+                    // - Keeps the local part as-is, converts domain to lowercase
+                    function normalizeEmail(email) {
+                        if (!email) return "";
+                        const parts = email.trim().split('@');
+                        if (parts.length === 2) {
+                            return `${parts[0]}@${parts[1].toLowerCase()}`;
+                        }
+                        return email.trim();
+                    }
+
+                    // Helper: normalize all emails within text (for notes)
+                    // - Finds all email addresses and converts domains to lowercase
+                    function normalizeEmailsInText(text) {
+                        if (!text) return "";
+                        return text.replace(/([a-zA-Z0-9._%-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,})/g, function(email) {
+                            return normalizeEmail(email);
+                        });
+                    }
+
                     // Helper: normalize person names
                     // - If name is all lower-case or all UPPERCASE, convert to Title Case
                     // - Preserve internal hyphens and apostrophes (e.g. "O'NEIL" -> "O'Neil", "ANNE-MARIE" -> "Anne-Marie")
@@ -423,8 +443,8 @@
                         
                         // Handle notes based on current language
                         if (!grouped[department][application].notes) {
-                            const trimmedNotesEn = notesEn.trim();
-                            const trimmedNotesFr = notesFr.trim();
+                            const trimmedNotesEn = normalizeEmailsInText(notesEn).trim();
+                            const trimmedNotesFr = normalizeEmailsInText(notesFr).trim();
                             let notes = "";
                             
                             if (currentLanguage === 'en') {
@@ -445,7 +465,7 @@
                         }
                         
                         if (email && !grouped[department][application].email) {
-                            grouped[department][application].email = email.trim();
+                            grouped[department][application].email = normalizeEmail(email);
                         }
                     }
                     
