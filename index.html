@@ -346,7 +346,7 @@
                         const appFr = row[6] || appEn; // Use English application if French is empty
 
                         // Skip if required fields are empty
-                        if ((!deptEn && !deptFr) || (!appEn)) {  // Only check if English app is empty since French can fall back to English
+                        if ((!deptEn && !deptFr) || (!appEn && !appFr)) {  // Check if both EN and FR applications are empty
                             continue;
                         }
                         
