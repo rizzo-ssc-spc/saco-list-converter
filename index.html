@@ -406,12 +406,20 @@
                         if (!grouped[department][application]) {
                             grouped[department][application] = {
                                 contacts: [],
+                                contactIds: new Set(),
                                 email: "",
                                 notes: ""
                             };
                         }
                         
-                        grouped[department][application].contacts.push(contactItem);
+                        // Create a unique identifier for this contact to check for duplicates
+                        const contactId = `${firstName}|${lastName}|${formattedPhone}|${city}`.toLowerCase();
+                        
+                        // Only add contact if it's not a duplicate
+                        if (!grouped[department][application].contactIds.has(contactId)) {
+                            grouped[department][application].contacts.push(contactItem);
+                            grouped[department][application].contactIds.add(contactId);
+                        }
                         
                         // Handle notes based on current language
                         if (!grouped[department][application].notes) {
