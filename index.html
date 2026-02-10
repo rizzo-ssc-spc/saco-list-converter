@@ -450,7 +450,8 @@
                             dataTitleOpen: "Expand all sections of content",
                             dataTitleClose: "Collapse all sections of content",
                             titleOpen: "Expand all sections of content",
-                            titleClose: "Collapse all sections of content"
+                            titleClose: "Collapse all sections of content",
+                            intro: "Should you have difficulties locating your SACO, you can email ESA for assistance: <a href=\"mailto:mainframeaccessesa-accesalunitecentralease@ssc-spc.gc.ca\">mainframeaccessesa-accesalunitecentralease@ssc-spc.gc.ca</a>."
                             
                         },
                         fr: {
@@ -461,11 +462,12 @@
                             dataTitleOpen: "Afficher toutes les sections de contenu",                            
                             dataTitleClose: "Réduire toutes les sections de contenu",
                             titleOpen: "Afficher toutes les sections de contenu",
-                            titleClose: "Réduire toutes les sections de contenu"
+                            titleClose: "Réduire toutes les sections de contenu",
+                            intro: "Si vous avez des difficultés à trouver votre ACAS, envoyez une demande d'aide par courriel au groupe de l'ASE à l'adresse <a href=\"mailto:mainframeaccessesa-accesalunitecentralease@ssc-spc.gc.ca\">mainframeaccessesa-accesalunitecentralease@ssc-spc.gc.ca</a>."
                         }
                     };
                     
-                    let html = `
+                    let html = `<p>${uiText[currentLanguage].intro}</p>\n
 <div class="btn-group pull-right mrgn-bttm-md mrgn-lft-sm">
     <button type="button" class="btn btn-default wb-toggle mrgn-rght-sm" data-toggle="{&quot;selector&quot;: &quot;details&quot;, &quot;parent&quot;: &quot;#saco-list&quot;, &quot;type&quot;: &quot;on&quot;}" data-title-close="${uiText[currentLanguage].dataTitleClose}" data-title-open="${uiText[currentLanguage].dataTitleOpen}" title="${uiText[currentLanguage].titleOpen}">${uiText[currentLanguage].expandAll}</button>
     <button type="button" class="btn btn-default wb-toggle" data-toggle="{&quot;selector&quot;: &quot;details&quot;, &quot;parent&quot;: &quot;#saco-list&quot;, &quot;type&quot;: &quot;off&quot;}" data-title-close="${uiText[currentLanguage].dataTitleClose}" data-title-open="${uiText[currentLanguage].dataTitleOpen}" title="${uiText[currentLanguage].titleClose}">${uiText[currentLanguage].collapseAll}</button>
