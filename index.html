@@ -340,17 +340,17 @@
                         if (!row) continue;
 
                         // Extract user information
-                        const firstNameRaw = row[8] || "";
-                        const lastNameRaw = row[7] || "";
+                        const firstNameRaw = String(row[8] || "");
+                        const lastNameRaw = String(row[7] || "");
                         const firstName = normalizePersonName(firstNameRaw);
                         const lastName = normalizePersonName(lastNameRaw);
-                        const phonePart1 = row[9] || "";
-                        const phonePart2 = row[10] || "";
-                        const extension = row[11] || "";
-                        const cityRaw = row[4] || "";
-                        const email = row[12] || "";
-                        const notesEn = row[13] || "";
-                        const notesFr = row[14] || "";
+                        const phonePart1 = String(row[9] || "");
+                        const phonePart2 = String(row[10] || "");
+                        const extension = String(row[11] || "");
+                        const cityRaw = String(row[4] || "");
+                        const email = String(row[12] || "");
+                        const notesEn = String(row[13] || "");
+                        const notesFr = String(row[14] || "");
 
                         // Skip if all user info fields are empty
                         if (!firstName && !lastName && !phonePart1 && !phonePart2 && !cityRaw) {
@@ -360,8 +360,8 @@
                         // Extract department and application info
                         const deptEn = row[0];
                         const deptFr = row[1];
-                        const acronymEn = (row[2] || "").trim();
-                        const acronymFr = (row[3] || acronymEn).trim(); // Use English acronym if French is empty
+                        const acronymEn = String(row[2] || "").trim();
+                        const acronymFr = String(row[3] || acronymEn).trim(); // Use English acronym if French is empty
                         const appEn = row[5] || "";
                         const appFr = row[6] || appEn; // Use English application if French is empty
 
@@ -510,8 +510,8 @@
                             }
                             const deptRaw = currentLanguage === 'en' ? (row[0] || "") : (row[1] || "");
                             const dept = normalizeDepartmentName(deptRaw);
-                            const acronymEn = (row[2] || "").trim();
-                            const acronymFr = (row[3] || acronymEn).trim(); // Use English acronym if French is empty
+                            const acronymEn = String(row[2] || "").trim();
+                            const acronymFr = String(row[3] || acronymEn).trim(); // Use English acronym if French is empty
                             const acronym = currentLanguage === 'en' ? acronymEn : acronymFr;
                             
                             if (dept && acronym) {
