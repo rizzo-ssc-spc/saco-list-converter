@@ -422,13 +422,34 @@
                         
                         const contactItem = `                            <li>\n${contactHTML}                            </li>\n`;
                         
+                        // Prepare notes for this row
+                        const trimmedNotesEn = normalizeEmailsInText(notesEn).trim();
+                        const trimmedNotesFr = normalizeEmailsInText(notesFr).trim();
+                        let rowNotes = "";
+                        
+                        if (currentLanguage === 'en') {
+                            // English mode: use English notes only
+                            rowNotes = trimmedNotesEn;
+                        } else {
+                            // French mode: use French notes or wrapped English notes
+                            if (trimmedNotesFr) {
+                                rowNotes = trimmedNotesFr;
+                            } else if (trimmedNotesEn) {
+                                rowNotes = `<span lang="en">${trimmedNotesEn}</span>`;
+                            }
+                        }
+                        
+                        // Create a unique key that includes the notes to separate groups by notes
+                        const groupKey = `${application}|||${rowNotes}`;
+                        
                         if (!grouped[department]) grouped[department] = {};
-                        if (!grouped[department][application]) {
-                            grouped[department][application] = {
+                        if (!grouped[department][groupKey]) {
+                            grouped[department][groupKey] = {
+                                application: application,
                                 contacts: [],
                                 contactIds: new Set(),
                                 email: "",
-                                notes: ""
+                                notes: rowNotes
                             };
                         }
                         
@@ -436,36 +457,13 @@
                         const contactId = `${firstName}|${lastName}|${formattedPhone}|${city}`.toLowerCase();
                         
                         // Only add contact if it's not a duplicate
-                        if (!grouped[department][application].contactIds.has(contactId)) {
-                            grouped[department][application].contacts.push(contactItem);
-                            grouped[department][application].contactIds.add(contactId);
+                        if (!grouped[department][groupKey].contactIds.has(contactId)) {
+                            grouped[department][groupKey].contacts.push(contactItem);
+                            grouped[department][groupKey].contactIds.add(contactId);
                         }
                         
-                        // Handle notes based on current language
-                        if (!grouped[department][application].notes) {
-                            const trimmedNotesEn = normalizeEmailsInText(notesEn).trim();
-                            const trimmedNotesFr = normalizeEmailsInText(notesFr).trim();
-                            let notes = "";
-                            
-                            if (currentLanguage === 'en') {
-                                // English mode: use English notes only
-                                notes = trimmedNotesEn;
-                            } else {
-                                // French mode: use French notes or wrapped English notes
-                                if (trimmedNotesFr) {
-                                    notes = trimmedNotesFr;
-                                } else if (trimmedNotesEn) {
-                                    notes = `<span lang="en">${trimmedNotesEn}</span>`;
-                                }
-                            }
-                            
-                            if (notes) {
-                                grouped[department][application].notes = notes;
-                            }
-                        }
-                        
-                        if (email && !grouped[department][application].email) {
-                            grouped[department][application].email = normalizeEmail(email);
+                        if (email && !grouped[department][groupKey].email) {
+                            grouped[department][groupKey].email = normalizeEmail(email);
                         }
                     }
                     
@@ -536,13 +534,13 @@
                                 html += `        <details class="panel panel-default brdr-0 mrgn-bttm-md">\n`;
                                     html += `            <summary class="panel-heading brdr-0"><span class="h4 mrgn-lft-sm">${dept}</span>${acronym ? ` <abbr class="small text-muted"><strong>(${acronym})</strong></abbr>` : ``}</summary>\n`;
                                     
-                                    for (const app in grouped[dept]) {
-                                        const appData = grouped[dept][app];
+                                    for (const groupKey in grouped[dept]) {
+                                        const appData = grouped[dept][groupKey];
                                         html += `            <section class="brdr-bttm panel-body">\n`;
                                                 html += `                <div class="row">\n`;
                                                 html += `                    <div class="col-xs-12 col-md-3">\n`;
                                                     html += `                        <h4 class="h5 mrgn-tp-0 mrgn-bttm-md">\n`;
-                                                        html += `                            ${app}\n`;
+                                                        html += `                            ${appData.application}\n`;
                                                         html += `                        </h4>\n`;
                                                         html += `                    </div>\n`;
                                                         html += `                    <div class="col-xs-12 col-md-9">\n`;
