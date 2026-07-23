@@ -15,7 +15,7 @@
             background-color: #f5f5f5;
             padding: 40px 0;
         }
-        
+
         .container {
             max-width: 1000px;
             margin: 0 auto;
@@ -26,22 +26,22 @@
             padding: 30px;
             padding-inline: 20px;
         }
-        
+
         h1 {
             margin-top: 0;
             margin-bottom: 30px;
         }
-        
+
         input[type="file"] {
             margin-bottom: 15px;
         }
-        
+
         label {
             font-weight: bold;
             margin-top: 20px;
             display: block;
         }
-        
+
         textarea {
             width: 100%;
             height: 600px;
@@ -52,25 +52,25 @@
             border-radius: 4px;
             resize: vertical;
         }
-        
+
         .language-selector {
             margin-bottom: 25px;
         }
-        
+
         .language-selector .btn {
             margin-right: 10px;
         }
-        
+
         .btn.active {
             font-weight: bold;
         }
-        
+
         /* Accessibility improvements */
         :focus {
             outline: 3px solid #4A90E2;
             outline-offset: 2px;
         }
-        
+
         .visually-hidden {
             position: absolute;
             width: 1px;
@@ -81,24 +81,24 @@
             clip: rect(0, 0, 0, 0);
             border: 0;
         }
-        
+
         /* Ensure sufficient color contrast */
         .btn-light {
             color: #2C2C2C;
             background-color: #F8F9FA;
         }
-        
+
         .btn-light:hover {
             background-color: #E2E6EA;
         }
-        
+
         /* Status message styling */
         .status-message {
             padding: 10px;
             margin: 10px 0;
             border-radius: 4px;
         }
-        
+
         .status-message.success {
             background-color: #DFF0D8;
             color: #3C763D;
@@ -108,18 +108,18 @@
 </head>
 
 <body>
-    
+
     <main class="container" role="main">
         <h1>SACO list converter</h1>
-        
+
         <div class="file-input-section">
             <label for="upload" class="form-label">Select Excel file to convert:</label>
             <input type="file" id="upload" accept=".xlsx,.xls" class="form-control" aria-describedby="fileHelpText" />
             <div id="fileHelpText" class="form-text">Accepted formats: .xlsx, .xls</div>
         </div>
-        
+
         <div id="statusMessages" role="status" aria-live="polite" class="status-message"></div>
-        
+
         <div class="output-section mt-4">
             <label for="output" class="form-label"><span class="h3">Generated HTML code</span></label>
             <div class="language-selector mb-4 mt-3" role="group" aria-label="Select output language">
@@ -137,14 +137,14 @@
             <div id="outputHelpText" class="form-text">The generated HTML code will appear here after uploading a file.</div>
         </div>
     </main>
-    
+
     <script>
         let currentLanguage = 'en';
-        
+
         function updateLanguageButtons(selectedLang) {
             const engBtn = document.getElementById('btnEnglish');
             const frBtn = document.getElementById('btnFrench');
-            
+
             if (selectedLang === 'en') {
                 engBtn.classList.add('active', 'btn-primary');
                 engBtn.classList.remove('btn-light');
@@ -163,25 +163,25 @@
                 document.documentElement.lang = 'fr';
             }
         }
-        
+
         document.getElementById('btnEnglish').addEventListener('click', function () {
             currentLanguage = 'en';
             updateLanguageButtons('en');
             processFile();
         });
-        
+
         document.getElementById('btnFrench').addEventListener('click', function () {
             currentLanguage = 'fr';
             updateLanguageButtons('fr');
             processFile();
         });
-        
+
         // Copies the code in the text area
-        document.getElementById("btn-copy-code").addEventListener("click", function() {
+        document.getElementById("btn-copy-code").addEventListener("click", function () {
             const textarea = document.getElementById("output");
             const statusMsg = document.getElementById("statusMessages");
             textarea.select();
-            
+
             try {
                 navigator.clipboard.writeText(textarea.value).then(() => {
                     // Update button state and icon
@@ -189,11 +189,11 @@
                     const successIcon = '<i class="bi bi-clipboard-check" aria-hidden="true"></i>';
                     const originalText = "Copy code";
                     this.innerHTML = `${successIcon} Copied!`;
-                    
+
                     // Show success message in status area
                     statusMsg.className = "status-message success";
                     statusMsg.textContent = "HTML code copied to clipboard successfully";
-                    
+
                     setTimeout(() => {
                         this.innerHTML = `${originalIcon} ${originalText}`;
                         statusMsg.textContent = "";
@@ -206,58 +206,73 @@
                 statusMsg.textContent = "Failed to copy HTML code to clipboard";
             }
         });
-        
+
         let lastUploadedFile = null;
-        
+
         document.getElementById('upload').addEventListener('change', function (e) {
             lastUploadedFile = e.target.files[0];
             processFile();
         });
-        
+
         // City name mappings for French and English
         const cityMappings = new Map([
-            ['montreal', { en: 'Montreal', fr: 'Montréal' }],
-            ['quebec', { en: 'Quebec', fr: 'Québec' }],
-            ['levis', { en: 'Levis', fr: 'Lévis' }],
-            ['trois-rivieres', { en: 'Trois-Rivieres', fr: 'Trois-Rivières' }],
-            ['gatineau', { en: 'Gatineau', fr: 'Gatineau' }]
+            ['montreal', {
+                en: 'Montreal',
+                fr: 'Montréal'
+            }],
+            ['quebec', {
+                en: 'Quebec',
+                fr: 'Québec'
+            }],
+            ['levis', {
+                en: 'Levis',
+                fr: 'Lévis'
+            }],
+            ['trois-rivieres', {
+                en: 'Trois-Rivieres',
+                fr: 'Trois-Rivières'
+            }],
+            ['gatineau', {
+                en: 'Gatineau',
+                fr: 'Gatineau'
+            }]
         ]);
 
         function formatCityName(city, language) {
             if (!city) return '';
-            
+
             // Normalize the city name for comparison (remove accents, convert to lowercase)
             const normalizedCity = city.toLowerCase()
                 .normalize('NFD')
-                .replace(/[\u0300-\u036f]/g, '')  // Remove accents
-                .replace(/[^a-z0-9-]/g, '');      // Remove special characters except hyphen
-            
+                .replace(/[\u0300-\u036f]/g, '') // Remove accents
+                .replace(/[^a-z0-9-]/g, ''); // Remove special characters except hyphen
+
             // Check if we have a mapping for this city
             const mapping = cityMappings.get(normalizedCity);
             if (mapping) {
                 return mapping[language];
             }
-            
+
             // If no mapping exists:
             // For English: remove accents and capitalize
             if (language === 'en') {
                 return city
                     .normalize('NFD')
-                    .replace(/[\u0300-\u036f]/g, '')  // Remove accents
-                    .replace(/^\w/, c => c.toUpperCase())  // Capitalize first letter
-                    .replace(/\w+/g, w => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase());  // Capitalize each word
+                    .replace(/[\u0300-\u036f]/g, '') // Remove accents
+                    .replace(/^\w/, c => c.toUpperCase()) // Capitalize first letter
+                    .replace(/\w+/g, w => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase()); // Capitalize each word
             }
-            
+
             // For French: keep accents and capitalize
             return city
-                .replace(/^\w/, c => c.toUpperCase())  // Capitalize first letter
-                .replace(/\w+/g, w => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase());  // Capitalize each word
+                .replace(/^\w/, c => c.toUpperCase()) // Capitalize first letter
+                .replace(/\w+/g, w => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase()); // Capitalize each word
         }
 
         function processFile() {
             const file = lastUploadedFile;
             if (!file) return;
-            
+
             const reader = new FileReader();
             reader.onload = function (event) {
                 try {
@@ -265,12 +280,40 @@
                     const workbook = XLSX.read(data, {
                         type: 'array'
                     });
-                    
-                    const worksheet = workbook.Sheets[workbook.SheetNames[0]];
+
+                    const worksheet = workbook.Sheets['SACO LIST'];
+                    if (!worksheet) {
+                        throw new Error('The workbook must contain a worksheet named "SACO LIST".');
+                    }
                     const jsonData = XLSX.utils.sheet_to_json(worksheet, {
                         header: 1
                     });
-                    
+
+                    const headers = jsonData[0] || [];
+                    const headerIndexes = new Map(Array.from(headers, (header, index) => [
+                        String(header || '').trim().toLowerCase(),
+                        index
+                    ]));
+                    const requiredHeaders = [
+                        'department (en)',
+                        'ministère (fr)',
+                        'acronym (en)',
+                        'acronyme (fr)',
+                        'application',
+                        'email / courriel',
+                        'first name / prénom',
+                        'last name / nom',
+                        'city',
+                        'phone number / téléphone',
+                        'extension',
+                        'notes'
+                    ];
+                    const missingHeaders = requiredHeaders.filter(header => !headerIndexes.has(header));
+                    if (missingHeaders.length) {
+                        throw new Error(`The SACO LIST worksheet is missing required column(s): ${missingHeaders.join(', ')}.`);
+                    }
+                    const valueFor = (row, header) => row[headerIndexes.get(header)] || '';
+
                     const grouped = {};
 
                     // Helper: sanitize department names
@@ -303,7 +346,7 @@
                     // - Finds all email addresses and converts domains to lowercase
                     function normalizeEmailsInText(text) {
                         if (!text) return "";
-                        return text.replace(/([a-zA-Z0-9._%-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,})/g, function(email) {
+                        return text.replace(/([a-zA-Z0-9._%-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,})/g, function (email) {
                             return normalizeEmail(email);
                         });
                     }
@@ -334,52 +377,49 @@
                             }).join('');
                         }).join(' ');
                     }
-                    
+
                     for (let i = 1; i < jsonData.length; i++) {
                         const row = jsonData[i];
                         if (!row) continue;
 
                         // Extract user information
-                        const firstNameRaw = String(row[8] || "");
-                        const lastNameRaw = String(row[7] || "");
+                        const firstNameRaw = String(valueFor(row, 'first name / prénom'));
+                        const lastNameRaw = String(valueFor(row, 'last name / nom'));
                         const firstName = normalizePersonName(firstNameRaw);
                         const lastName = normalizePersonName(lastNameRaw);
-                        const phonePart1 = String(row[9] || "");
-                        const phonePart2 = String(row[10] || "");
-                        const extension = String(row[11] || "");
-                        const cityRaw = String(row[4] || "");
-                        const email = String(row[12] || "");
-                        const notesEn = String(row[13] || "");
-                        const notesFr = String(row[14] || "");
+                        const phoneNumber = String(valueFor(row, 'phone number / téléphone'));
+                        const extension = String(valueFor(row, 'extension'));
+                        const cityRaw = String(valueFor(row, 'city'));
+                        const email = String(valueFor(row, 'email / courriel'));
+                        const notes = String(valueFor(row, 'notes'));
 
                         // Skip if all user info fields are empty
-                        if (!firstName && !lastName && !phonePart1 && !phonePart2 && !cityRaw) {
+                        if (!firstName && !lastName && !phoneNumber && !cityRaw) {
                             continue;
                         }
 
                         // Extract department and application info
-                        const deptEn = row[0];
-                        const deptFr = row[1];
-                        const acronymEn = String(row[2] || "").trim();
-                        const acronymFr = String(row[3] || acronymEn).trim(); // Use English acronym if French is empty
-                        const appEn = row[5] || "";
-                        const appFr = row[6] || appEn; // Use English application if French is empty
+                        const deptEn = valueFor(row, 'department (en)');
+                        const deptFr = valueFor(row, 'ministère (fr)');
+                        const acronymEn = String(valueFor(row, 'acronym (en)')).trim();
+                        const acronymFr = String(valueFor(row, 'acronyme (fr)') || acronymEn).trim();
+                        const applicationRaw = valueFor(row, 'application');
 
                         // Skip if required fields are empty
-                        if ((!deptEn && !deptFr) || (!appEn && !appFr)) {  // Check if both EN and FR applications are empty
+                        if ((!deptEn && !deptFr) || !applicationRaw) {
                             continue;
                         }
-                        
+
                         const departmentRaw = currentLanguage === 'en' ? (deptEn || "Unknown Department") : (deptFr || "Ministère inconnu");
                         const department = normalizeDepartmentName(departmentRaw);
                         const acronym = currentLanguage === 'en' ? acronymEn : acronymFr;
-                        let application = currentLanguage === 'en' ? appEn : appFr;
+                        let application = applicationRaw;
                         application = application.replace(/\\/g, "/").replace(/\s*\/\s*/g, " / ");
-                        
+
                         const city = formatCityName(cityRaw, currentLanguage);
-                        
+
                         // Clean and verify phone number format
-                        const phoneRaw = `${phonePart1}${phonePart2}`.replace(/\D/g, '');
+                        const phoneRaw = phoneNumber.replace(/\D/g, '');
                         let formattedPhone = '';
 
                         // Helper to validate phone numbers to avoid placeholder or obviously invalid numbers.
@@ -405,43 +445,29 @@
                                 formattedPhone += `#${extension.trim()}`;
                             }
                         }
-                        
+
                         let contactHTML = `                                ${firstName} ${lastName}\n`;
-                        
+
                         // Only add phone number if it's properly formatted (at least 10 digits)
                         if (formattedPhone) {
                             contactHTML += `<br>\n                                ${formattedPhone}`;
                         }
-                        
+
                         // Add city on a new line if present
                         if (cityRaw.trim()) {
                             contactHTML += `<br>\n                                <span class="small">${city}</span>`;
                         }
-                        
+
                         contactHTML += `\n`;
-                        
+
                         const contactItem = `                            <li>\n${contactHTML}                            </li>\n`;
-                        
+
                         // Prepare notes for this row
-                        const trimmedNotesEn = normalizeEmailsInText(notesEn).trim();
-                        const trimmedNotesFr = normalizeEmailsInText(notesFr).trim();
-                        let rowNotes = "";
-                        
-                        if (currentLanguage === 'en') {
-                            // English mode: use English notes only
-                            rowNotes = trimmedNotesEn;
-                        } else {
-                            // French mode: use French notes or wrapped English notes
-                            if (trimmedNotesFr) {
-                                rowNotes = trimmedNotesFr;
-                            } else if (trimmedNotesEn) {
-                                rowNotes = `<span lang="en">${trimmedNotesEn}</span>`;
-                            }
-                        }
-                        
+                        const rowNotes = normalizeEmailsInText(notes).trim();
+
                         // Create a unique key that includes the notes to separate groups by notes
                         const groupKey = `${application}|||${rowNotes}`;
-                        
+
                         if (!grouped[department]) grouped[department] = {};
                         if (!grouped[department][groupKey]) {
                             grouped[department][groupKey] = {
@@ -452,21 +478,21 @@
                                 notes: rowNotes
                             };
                         }
-                        
+
                         // Create a unique identifier for this contact to check for duplicates
                         const contactId = `${firstName}|${lastName}|${formattedPhone}|${city}`.toLowerCase();
-                        
+
                         // Only add contact if it's not a duplicate
                         if (!grouped[department][groupKey].contactIds.has(contactId)) {
                             grouped[department][groupKey].contacts.push(contactItem);
                             grouped[department][groupKey].contactIds.add(contactId);
                         }
-                        
+
                         if (email && !grouped[department][groupKey].email) {
                             grouped[department][groupKey].email = normalizeEmail(email);
                         }
                     }
-                    
+
                     const uiText = {
                         en: {
                             expandAll: "Expand all",
@@ -478,110 +504,109 @@
                             titleOpen: "Expand all sections of content",
                             titleClose: "Collapse all sections of content",
                             intro: "Should you have difficulties locating your SACO, you can email ESA for assistance: <a href=\"mailto:mainframeaccessesa-accesalunitecentralease@ssc-spc.gc.ca\">mainframeaccessesa-accesalunitecentralease@ssc-spc.gc.ca</a>."
-                            
+
                         },
                         fr: {
                             expandAll: "Afficher tout",
                             collapseAll: "Réduire tout",
                             notes: "Notes",
                             email: "Courriel",
-                            dataTitleOpen: "Afficher toutes les sections de contenu",                            
+                            dataTitleOpen: "Afficher toutes les sections de contenu",
                             dataTitleClose: "Réduire toutes les sections de contenu",
                             titleOpen: "Afficher toutes les sections de contenu",
                             titleClose: "Réduire toutes les sections de contenu",
                             intro: "Si vous avez des difficultés à trouver votre ACAS, envoyez une demande d'aide par courriel au groupe de l'ASE à l'adresse <a href=\"mailto:mainframeaccessesa-accesalunitecentralease@ssc-spc.gc.ca\">mainframeaccessesa-accesalunitecentralease@ssc-spc.gc.ca</a>."
                         }
                     };
-                    
+
                     let html = `<p>${uiText[currentLanguage].intro}</p>\n
 <div class="btn-group pull-right mrgn-bttm-md mrgn-lft-sm">
     <button type="button" class="btn btn-default wb-toggle mrgn-rght-sm" data-toggle="{&quot;selector&quot;: &quot;details&quot;, &quot;parent&quot;: &quot;#saco-list&quot;, &quot;type&quot;: &quot;on&quot;}" data-title-close="${uiText[currentLanguage].dataTitleClose}" data-title-open="${uiText[currentLanguage].dataTitleOpen}" title="${uiText[currentLanguage].titleOpen}">${uiText[currentLanguage].expandAll}</button>
     <button type="button" class="btn btn-default wb-toggle" data-toggle="{&quot;selector&quot;: &quot;details&quot;, &quot;parent&quot;: &quot;#saco-list&quot;, &quot;type&quot;: &quot;off&quot;}" data-title-close="${uiText[currentLanguage].dataTitleClose}" data-title-open="${uiText[currentLanguage].dataTitleOpen}" title="${uiText[currentLanguage].titleClose}">${uiText[currentLanguage].collapseAll}</button>
 </div>\n`;
-                    
-                    html += `<ul class="list-unstyled wb-filter lst-spcd" data-wb-filter="{&quot;selector&quot;:&quot;summary&quot;, &quot;hdnparentuntil&quot;: &quot;ul&quot;}" id="saco-list">\n`;
-                        
-                        let deptAcronyms = {};
-                        for (let i = 1; i < jsonData.length; i++) {
-                            const row = jsonData[i];
-                            // Skip empty rows
-                            if (!row || row.every(cell => !cell)) {
-                                continue;
-                            }
-                            const deptRaw = currentLanguage === 'en' ? (row[0] || "") : (row[1] || "");
-                            const dept = normalizeDepartmentName(deptRaw);
-                            const acronymEn = String(row[2] || "").trim();
-                            const acronymFr = String(row[3] || acronymEn).trim(); // Use English acronym if French is empty
-                            const acronym = currentLanguage === 'en' ? acronymEn : acronymFr;
-                            
-                            if (dept && acronym) {
-                                deptAcronyms[dept] = acronym;
-                            }
-                        }
-                        
-                        // Sort departments based on language
-                        const sortedDepartments = Object.keys(grouped).sort((a, b) => {
-                            return a.localeCompare(b, currentLanguage === 'fr' ? 'fr-CA' : 'en-CA', {
-                                sensitivity: 'base',
-                                ignorePunctuation: true
-                            });
-                        });
 
-                        for (const dept of sortedDepartments) {
-                            const acronym = deptAcronyms[dept] || "";
-                            
-                            html += `    <li>\n`;
-                                html += `        <details class="panel panel-default brdr-0 mrgn-bttm-md">\n`;
-                                    html += `            <summary class="panel-heading brdr-0"><span class="h4 mrgn-lft-sm">${dept}</span>${acronym ? ` <abbr class="small text-muted"><strong>(${acronym})</strong></abbr>` : ``}</summary>\n`;
-                                    
-                                    for (const groupKey in grouped[dept]) {
-                                        const appData = grouped[dept][groupKey];
-                                        html += `            <section class="brdr-bttm panel-body">\n`;
-                                                html += `                <div class="row">\n`;
-                                                html += `                    <div class="col-xs-12 col-md-3">\n`;
-                                                    html += `                        <h4 class="h5 mrgn-tp-0 mrgn-bttm-md">\n`;
-                                                        html += `                            ${appData.application}\n`;
-                                                        html += `                        </h4>\n`;
-                                                        html += `                    </div>\n`;
-                                                        html += `                    <div class="col-xs-12 col-md-9">\n`;
-                                                            if (appData.notes) {
-                                                                const colonFormat = currentLanguage === 'fr' ? '&nbsp;:' : ':';
-                                                                html += `                        <p><strong>${uiText[currentLanguage].notes}${colonFormat}</strong>&nbsp;${appData.notes}</p>\n`;
-                                                            }
-                                                            if (appData.email) {
-                                                                const colonFormat = currentLanguage === 'fr' ? '&nbsp;:' : ':';
-                                                                html += `                        <p><strong>${uiText[currentLanguage].email}${colonFormat}</strong>&nbsp;<a href="mailto:${appData.email}">${appData.email}</a></p>\n`;
-                                                            }
-                                                            html += `                        <ul class="lst-spcd colcount-md-3">\n`;
-                                                                html += appData.contacts.join("");
-                                                                html += `                        </ul>\n`;
-                                                                html += `                    </div>\n`;
-                                                                html += `                </div>\n`;
-                                                                html += `            </section>\n`;
-                                                            }
-                                                            
-                                                            html += `        </details>\n`;
-                                                            html += `    </li>\n`;
-                                                        }
-                                                        
-                                                        html += `</ul>\n`;
-                                                        document.getElementById('output').value = html;
-                                                        
-                                                    } catch (err) {
-                                                        document.getElementById('output').value = `Error reading file: ${err.message}`;
-                                                    }
-                                                };
-                                                
-                                                reader.onerror = function () {
-                                                    document.getElementById('output').value = "File could not be read.";
-                                                };
-                                                
-                                                reader.readAsArrayBuffer(file);
-                                            }
-                                        </script>
-                                        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
-                                        
-                                    </body>
-                                    
-                                    </html>
-                                    
+                    html += `<ul class="list-unstyled wb-filter lst-spcd" data-wb-filter="{&quot;selector&quot;:&quot;summary&quot;, &quot;hdnparentuntil&quot;: &quot;ul&quot;}" id="saco-list">\n`;
+
+                    let deptAcronyms = {};
+                    for (let i = 1; i < jsonData.length; i++) {
+                        const row = jsonData[i];
+                        // Skip empty rows
+                        if (!row || row.every(cell => !cell)) {
+                            continue;
+                        }
+                        const deptRaw = currentLanguage === 'en' ? valueFor(row, 'department (en)') : valueFor(row, 'ministère (fr)');
+                        const dept = normalizeDepartmentName(deptRaw);
+                        const acronymEn = String(valueFor(row, 'acronym (en)')).trim();
+                        const acronymFr = String(valueFor(row, 'acronyme (fr)') || acronymEn).trim();
+                        const acronym = currentLanguage === 'en' ? acronymEn : acronymFr;
+
+                        if (dept && acronym) {
+                            deptAcronyms[dept] = acronym;
+                        }
+                    }
+
+                    // Sort departments based on language
+                    const sortedDepartments = Object.keys(grouped).sort((a, b) => {
+                        return a.localeCompare(b, currentLanguage === 'fr' ? 'fr-CA' : 'en-CA', {
+                            sensitivity: 'base',
+                            ignorePunctuation: true
+                        });
+                    });
+
+                    for (const dept of sortedDepartments) {
+                        const acronym = deptAcronyms[dept] || "";
+
+                        html += `    <li>\n`;
+                        html += `        <details class="panel panel-default brdr-0 mrgn-bttm-md">\n`;
+                        html += `            <summary class="panel-heading brdr-0"><span class="h4 mrgn-lft-sm">${dept}</span>${acronym ? ` <abbr class="small text-muted"><strong>(${acronym})</strong></abbr>` : ``}</summary>\n`;
+
+                        for (const groupKey in grouped[dept]) {
+                            const appData = grouped[dept][groupKey];
+                            html += `            <section class="brdr-bttm panel-body">\n`;
+                            html += `                <div class="row">\n`;
+                            html += `                    <div class="col-xs-12 col-md-3">\n`;
+                            html += `                        <h4 class="h5 mrgn-tp-0 mrgn-bttm-md">\n`;
+                            html += `                            ${appData.application}\n`;
+                            html += `                        </h4>\n`;
+                            html += `                    </div>\n`;
+                            html += `                    <div class="col-xs-12 col-md-9">\n`;
+                            if (appData.notes) {
+                                const colonFormat = currentLanguage === 'fr' ? '&nbsp;:' : ':';
+                                html += `                        <p><strong>${uiText[currentLanguage].notes}${colonFormat}</strong>&nbsp;${appData.notes}</p>\n`;
+                            }
+                            if (appData.email) {
+                                const colonFormat = currentLanguage === 'fr' ? '&nbsp;:' : ':';
+                                html += `                        <p><strong>${uiText[currentLanguage].email}${colonFormat}</strong>&nbsp;<a href="mailto:${appData.email}">${appData.email}</a></p>\n`;
+                            }
+                            html += `                        <ul class="lst-spcd colcount-md-3">\n`;
+                            html += appData.contacts.join("");
+                            html += `                        </ul>\n`;
+                            html += `                    </div>\n`;
+                            html += `                </div>\n`;
+                            html += `            </section>\n`;
+                        }
+
+                        html += `        </details>\n`;
+                        html += `    </li>\n`;
+                    }
+
+                    html += `</ul>\n`;
+                    document.getElementById('output').value = html;
+
+                } catch (err) {
+                    document.getElementById('output').value = `Error reading file: ${err.message}`;
+                }
+            };
+
+            reader.onerror = function () {
+                document.getElementById('output').value = "File could not be read.";
+            };
+
+            reader.readAsArrayBuffer(file);
+        }
+    </script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
+
+</body>
+
+</html>
